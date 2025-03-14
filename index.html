@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keepwork Proxy</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        #proxy-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script>
+        const BASE_URL = 'https://keepwork.com/';
+        const DEFAULT_URL = 'https://keepwork.com/lixizhi/note/bio/lixizhi';
+    </script>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <iframe id="proxy-iframe" src="" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+
+    <footer style="position: fixed; bottom: 0; width: 100%; text-align: center; background-color: #f8f9fa; padding: 10px; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);">
+        &copy; 2025 Your Company Name. All rights reserved.
+    </footer>
+
+    <script>
+        const iframe = document.getElementById('proxy-iframe');
+        const loadingIndicator = document.getElementById('loading');
+
+        // Set iframe src dynamically
+        iframe.src = DEFAULT_URL;
+
+        // Hide loading indicator when iframe loads
+        iframe.addEventListener('load', () => {
+            loadingIndicator.style.opacity = '0';
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+            }, 500);
+        });
+
+        // Handle messages from the iframe
+        window.addEventListener('message', (event) => {
+            // Only accept messages from our iframe
+            if (event.source !== iframe.contentWindow) return;
+            
+            // Handle navigation messages
+            if (event.data.type === 'navigation' && event.data.url) {
+                const url = event.data.url;
+                
+                // Check if it's a relative URL
+                if (url.startsWith('/')) {
+                    iframe.src = `${BASE_URL}${url}`;
+                } else if (!url.startsWith('http')) {
+                    iframe.src = `${BASE_URL}${url}`;
+                } else {
+                    iframe.src = url;
+                }
+                
+                // Update browser URL without refreshing
+                window.history.pushState({}, '', `/proxy.html#${url}`);
+            }
+            if (event.data.type === 'routeChange') {
+                window.location.hash = event.data.content.replace(/^\//, '');
+            }
+        });
+
+        // Handle initial URL
+        const hash = window.location.hash.replace(/^#/, '') || '/';
+        if (hash !== '/') {
+            iframe.src = `${BASE_URL}${hash}`;
+        }
+
+        // Update iframe src when the user changes the hash part of the URL in the address bar and hits enter
+        window.addEventListener('hashchange', () => {
+            const newHash = window.location.hash.replace(/^#/, '') || '/';
+            const newUrl = `${BASE_URL}${newHash}`;
+            if(iframe.src !== newUrl) {
+                iframe.src = newUrl;
+            }
+        });
+    </script>
+</body>
+</html>

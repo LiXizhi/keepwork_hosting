@@ -4,7 +4,7 @@ A simple Node.js website for static `index.html` hosting using Express.
 
 ## How to Host Keepwork in Your Domain
 - https://keepwork.com/official/docs/UserGuide/keepwork/publish_yoursite
-- modify Default_url in index.html
+- modify Default_url in [index.html](https://github.com/LiXizhi/keepwork_hosting/blob/main/index.html)
 
 ## Installation
 
